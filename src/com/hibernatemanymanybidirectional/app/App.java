@@ -7,8 +7,11 @@ import java.util.Set;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hibernatemanymanybidirectional.pojo.Author;
 import com.hibernatemanymanybidirectional.pojo.Book;
@@ -16,45 +19,64 @@ import com.hibernatemanymanybidirectional.util.HibernateUtil;
 
 public class App {
 
+	static Logger logger = LoggerFactory.getLogger(App.class);
+	
+	
 	public static void main(String[] args) {
 		System.out.println(" ****** Hibernate One-Many Bidirectional - Foreignkey (Annotation) *** START **** ");
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		session.beginTransaction();
+		Transaction tx = null;
+		Session session = null;
+		try {
+			session = HibernateUtil.getSessionFactory().openSession();
+			tx = session.beginTransaction();
 
-		Set<Author> authors = new HashSet<Author>();
-		Set<Book> books = new HashSet<Book>();
+			Set<Author> authors = new HashSet<Author>();
+			Set<Book> books = new HashSet<Book>();
 
-		Author author1 = new Author();
-		author1.setAuthorName("Rod johnson");
-		authors.add(author1);
-		Author author2 = new Author();
-		author2.setAuthorName("Gavin King");
-		authors.add(author2);
+			Author author1 = new Author();
+			author1.setAuthorName("Rod johnson");
+			authors.add(author1);
+			Author author2 = new Author();
+			author2.setAuthorName("Gavin King");
+			authors.add(author2);
 
-		Book book1 = new Book();
-		book1.setBookName("Programming with Spring");
-		Book book2 = new Book();
-		book2.setBookName("Programming with Hibernate");
-		books.add(book1);
-		books.add(book2);
+			Book book1 = new Book();
+			book1.setBookName("Programming with Spring");
+			Book book2 = new Book();
+			book2.setBookName("Programming with Hibernate");
+			books.add(book1);
+			books.add(book2);
 
-		author1.setBooks(books);
-		author2.setBooks(books);
+			author1.setBooks(books);
+			author2.setBooks(books);
 
-		book1.setAuthors(authors);
-		book2.setAuthors(authors);
+			book1.setAuthors(authors);
+			book2.setAuthors(authors);
 
-		session.save(author1);
-		session.save(author2);
-		session.getTransaction().commit();
-		
-		queryLanguages(session);
+			session.save(author1);
+			session.save(author2);
+			tx.commit();
 
-		namedQueries(session);
-		
-		session.close();
+			queryLanguages(session);
+
+			namedQueries(session);
+
+			session.close();
+		} catch (RuntimeException e) {
+			try {
+				if (tx != null) {
+					tx.rollback();
+				}
+			} catch (RuntimeException rbe) {
+				logger.error("Couldn’t roll back transaction", rbe);
+			}
+			throw e;
+		} finally {
+			if (session != null) {
+				session.close();
+			}
+		}
 		System.out.println(" ****** Hibernate One-Many Bidirectional - Foreignkey (Annotation) *** END **** ");
-
 	}
 
 	private static void namedQueries(Session session) {
