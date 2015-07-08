@@ -10,8 +10,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.Table;
 
+@NamedNativeQueries({ @NamedNativeQuery(name = "findAuthorByAuthorNameNativeSQL", query = "select * from mydb.AUTHOR a where a.A_NAME = :authorName", resultClass = Author.class) })
 @Entity
 @Table(name = "AUTHOR", schema = "MYDB")
 public class Author implements Serializable {

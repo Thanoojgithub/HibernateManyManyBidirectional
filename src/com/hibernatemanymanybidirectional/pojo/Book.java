@@ -14,8 +14,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
+@NamedQueries({ @NamedQuery(name = "findBookByBookName", query = "from Book b where b.bookName = :bookName") })
 @Entity
 @Table(name = "BOOK", schema = "MYDB")
 public class Book implements Serializable {

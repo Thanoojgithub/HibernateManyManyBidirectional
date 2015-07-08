@@ -17,8 +17,7 @@ import com.hibernatemanymanybidirectional.util.HibernateUtil;
 public class App {
 
 	public static void main(String[] args) {
-		System.out
-				.println(" ****** Hibernate One-Many Unidirectional - Foreignkey (Annotation) *** START **** ");
+		System.out.println(" ****** Hibernate One-Many Bidirectional - Foreignkey (Annotation) *** START **** ");
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
 
@@ -26,7 +25,7 @@ public class App {
 		Set<Book> books = new HashSet<Book>();
 
 		Author author1 = new Author();
-		author1.setAuthorName("rod johnson");
+		author1.setAuthorName("Rod johnson");
 		authors.add(author1);
 		Author author2 = new Author();
 		author2.setAuthorName("Gavin King");
@@ -48,16 +47,38 @@ public class App {
 		session.save(author1);
 		session.save(author2);
 		session.getTransaction().commit();
-		doHQLCreateQuery(session, "Programming with Spring");
-		doCriteria(session, "Programming with Spring");
-		doSQLQuery(session, "Programming with Spring");
+		
+		queryLanguages(session);
+
+		namedQueries(session);
+		
 		session.close();
-		System.out
-				.println(" ****** Hibernate One-Many Unidirectional - Foreignkey (Annotation) *** END **** ");
+		System.out.println(" ****** Hibernate One-Many Bidirectional - Foreignkey (Annotation) *** END **** ");
 
 	}
 
-	public static void doHQLCreateQuery(Session session, String bookName) {
+	private static void namedQueries(Session session) {
+		Query queryNamedQuery = session.getNamedQuery("findBookByBookName")
+				.setString("bookName", "Programming with Spring");
+		List<Book> booksNamedQuery = (List<Book>) queryNamedQuery.list();
+		for (Book book : booksNamedQuery) {
+			System.out.println(book);
+		}
+		Query queryNamedNativeQuery = session.getNamedQuery("findAuthorByAuthorNameNativeSQL")
+				.setString("authorName", "Rod johnson");
+		List<Author> authorsNamedNativeQuery = (List<Author>) queryNamedNativeQuery.list();
+		for (Author author : authorsNamedNativeQuery) {
+			System.out.println(author);
+		}
+	}
+
+	private static void queryLanguages(Session session) {
+		doHQLCreateQuery(session, "Programming with Spring");
+		doCriteria(session, "Programming with Spring");
+		doSQLQuery(session, "Programming with Spring");
+	}
+
+	private static void doHQLCreateQuery(Session session, String bookName) {
 		Query querySelect = session
 				.createQuery("from Book where bookName = :bookName ");
 		querySelect.setParameter("bookName", bookName);
@@ -73,7 +94,7 @@ public class App {
 
 	}
 
-	public static void doCriteria(Session session, String bookName) {
+	private static void doCriteria(Session session, String bookName) {
 
 		Criteria criteria = session.createCriteria(Book.class);
 		if (bookName != null) {
